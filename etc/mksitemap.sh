@@ -3,13 +3,13 @@
 
 # include canonical URLs only, thus a problem when using the htdocs directory for generation...
 
-set -e
+set -e -u
 
 changefreq='daily'
 
-: ${HTDOCS:=public}
+: "${HTDOCS:=public}"
 
-test -d "${HTDOCS}" || {
+test -d "${HTDOCS-}" || {
 	printf 'Could not find htdocs directory: %s\n' "${HTDOCS-}" >&2
 	exit 1
 }
@@ -20,7 +20,7 @@ scandir() {
 		if test -d "${p}"
 		then
 			# recurse
-			(cd "${p}" && scandir "${1-}${1:+/}${p##*/}")
+			(cd "${p}" && scandir "${1-}/${p##*/}")
 		else
 			case ${p}
 			in
