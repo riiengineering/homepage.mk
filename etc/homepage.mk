@@ -10,29 +10,10 @@ define dirname
 $(patsubst %/,%$(2),$(dir $(patsubst %/.,%,$(1))))
 endef
 
-# call download,url
-ifneq (,$(shell command -v curl 2>/dev/null))
-define download_stdout
-	curl -L -o - $(call shquot,$(1))
-endef
-else
-ifneq (,$(shell command -v wget 2>/dev/null))
-define download_stdout
-	wget -O - $(call shquot,$(1))
-endef
-else
-define download_stdout
-$(error Cannot find curl(1) or wget(1) to download $(1))
-endef
-endif
-endif
-
-
 # call pathsearch,command-name
 define pathsearch
-$(firstword $(wildcard $(addsuffix /$(1),$(subst :, ,$(PATH)))))
+$(wildcard $(addsuffix /$(1),$(subst :, ,$(PATH))))
 endef
-#pathsearch = $(shell command -v $(1))
 
 # call shquot,string
 define shquot
@@ -43,6 +24,23 @@ endef
 define uniq
 $(if $(1),$(firstword $(1)) $(call uniq,$(filter-out $(firstword $(1)),$(1))))
 endef
+
+# call download,url
+ifneq (,$(call pathsearch,curl))
+define download_stdout
+	curl -L -o - $(call shquot,$(1))
+endef
+else
+ifneq (,$(call pathsearch,wget))
+define download_stdout
+	wget -O - $(call shquot,$(1))
+endef
+else
+define download_stdout
+$(error Cannot find curl(1) or wget(1) to download $(1))
+endef
+endif
+endif
 
 
 # variables
@@ -101,10 +99,9 @@ dist.tar.gz: htdocs
 
 .PHONY: watch
 watch: htdocs
-	+@command -v fswatch >/dev/null || { \
-		echo 'Missing fswatch, auto re-build is not supported without it.' >&2; \
-		false; \
-	}
+ifeq (,$(call pathsearch,fswatch))
+	$(error Missing fswatch(1), auto re-build is not supported without it.)
+endif
 	@while \
 		echo 'Waiting for changes...' ; \
 		fl=$$(fswatch -1 -e '#' -e '~$$' -e '/\.git$$' -e '/\.git/' -e '^$(DESTDIR)/' -m poll_monitor -0 --format='%p ' -r .); \
