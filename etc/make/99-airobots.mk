@@ -52,7 +52,7 @@ ai.robots.htaccess:: $(lastword $(MAKEFILE_LIST))
 		'	# block AI training robots' \
 		''
 	$(call download_stdout,$(AI_ROBOTS_HTACCESS_URL)) \
-	| sed -e 's/^/	/' -e 's/%/\\&/g' >>$@
+	| sed -e 's/^/	/' -e 's/[%\]/\\&/g' >>$@
 	printf '%s\n' >>$@ '</IfModule>'
 
 
