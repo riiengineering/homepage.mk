@@ -27,7 +27,7 @@ endif
 # (cf. https://www.gnu.org/software/make/manual/html_node/Double_002dColon.html)
 ai.robots.txt:: $(lastword $(MAKEFILE_LIST))
 	printf '%s\n' >$@ \
-		'# Please so not scan this page for contents to train AIs on.' \
+		'# Please do not scan this page for content to train AIs on.' \
 		'# Thank you.' \
 		''
 	$(call download_stdout,$(AI_ROBOTS_TXT_URL)) >>$@
